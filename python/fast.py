@@ -36,31 +36,28 @@ def initial_vocab(words):
                 fresh_tok += 1
     return vocab
 
-
-def get_stats(root):
-    stats = MultisetHeap()
-    while root.nxt is not None:
-        if root.word_id == root.nxt.word_id:
-            stats.add((root.tok_id, root.nxt.tok_id), 1)
-        root = root.nxt
-    return stats
-
-
-def tokens_and_pairs(words, vocab):
+def tokens_pairs_and_stats(words, vocab, keep_stats=False):
     dummy = TokenNode("", -1, -1)
     node = dummy
     pairs = defaultdict(list)
+    if keep_stats:
+        stats = MultisetHeap()
+
     for word_id, word in enumerate(words):
         for c in word:
             tok = TokenNode(c, vocab[c], word_id)
             node.append_node(tok)
             if node.word_id == tok.word_id:
                 pairs[(node.tok_id, tok.tok_id)].append(node)
+                if keep_stats:
+                    stats.add((node.tok_id, tok.tok_id), 1)
             node = tok
     root = dummy.nxt
     root.prev = None
-    return root, pairs
 
+    if keep_stats:
+        return root, pairs, stats
+    return root, pairs, None
 
 def merge(pair_nodes, pair_to_merge, fresh_token, stats=None):
     for node in pair_nodes[pair_to_merge]:
@@ -84,12 +81,12 @@ def merge(pair_nodes, pair_to_merge, fresh_token, stats=None):
 def train(words, num_merges, verbose=0):
     vocab = initial_vocab(words)
     reverse_vocab = {vocab[c]: c for c in vocab}
-    root, pairs = tokens_and_pairs(words, vocab)
+    _root, pairs, stats = tokens_pairs_and_stats(words, vocab, keep_stats=True)
 
     fresh_token = len(vocab)
     merge_tree = []
 
-    stats = get_stats(root)
+    # stats = get_stats(root)
     for i in range(num_merges):
         if verbose >= 1 and i % 100 == 0:
             print(f"Finalized {i} merges")
@@ -111,8 +108,7 @@ def train(words, num_merges, verbose=0):
 
 
 def encode(vocab, merge_tree, words):
-    tokens, pairs = tokens_and_pairs(words, vocab)
-
+    tokens, pairs, _ = tokens_pairs_and_stats(words, vocab, keep_stats=False)
     for (left, right), new in merge_tree:
         merge(pairs, (left, right), new)
     return tokens
@@ -133,7 +129,7 @@ def decode(root):
 
 
 def test_train():
-    words = ["aaa"]
+    words = ["low", "lower", "hard", "harder"]
 
     vocab, merge_tree = train(words, 6, verbose=2)
     root = encode(vocab, merge_tree, words)
@@ -147,7 +143,7 @@ def test_train():
 
 
 def test_train_large():
-    with open("data/fra.txt", "r", encoding="utf-8") as file:
+    with open("../data/fra.txt", "r", encoding="utf-8") as file:
         txt = file.read()
         lines = txt.strip().split("\n")
         fra, eng = [], []
@@ -163,7 +159,7 @@ def test_train_large():
             if len(word) > 0:
                 eng_words.append(word)
     print("Starting training")
-    train(eng_words, 10000, verbose=1)
+    train(eng_words, 10000, verbose=0)
     print("Done training")
 
 

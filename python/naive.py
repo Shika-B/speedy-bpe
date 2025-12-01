@@ -55,7 +55,7 @@ def train(words, num_merges, verbose=True):
 
     fresh_token = len(vocab)
     merge_tree = []
-    for _ in range(num_merges):
+    for i in range(num_merges):
         stats = get_stats(tokens)
         try:
             ((left, right), _count) = stats.most_common(1)[0]
@@ -73,7 +73,8 @@ def train(words, num_merges, verbose=True):
 
         merge_tree.append(((left, right), fresh_token))
         fresh_token += 1
-
+        if i % 10 == 0:
+            print(i)
     return vocab, merge_tree
 
 
@@ -111,7 +112,7 @@ def test_train():
 
 
 def test_train_large():
-    with open("data/fra.txt", "r", encoding="utf-8") as file:
+    with open("../data/fra.txt", "r", encoding="utf-8") as file:
         txt = file.read()
         lines = txt.strip().split("\n")
         fra, eng = [], []
@@ -129,8 +130,8 @@ def test_train_large():
             if len(word) > 0:
                 eng_words.append(word)
 
-    train(eng_words, 40, verbose=True)
+    train(eng_words, 10_000, verbose=True)
 
 
 if __name__ == "__main__":
-    test_train()
+    test_train_large()
