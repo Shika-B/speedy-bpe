@@ -112,25 +112,13 @@ def test_train():
 
 
 def test_train_large():
-    with open("../data/fra.txt", "r", encoding="utf-8") as file:
+    with open("../data/eng_preprocessed.txt", "r", encoding="utf-8") as file:
         txt = file.read()
-        lines = txt.strip().split("\n")
-        fra, eng = [], []
-        for line in lines:
-            cols = line.split("\t")
-            eng.append(cols[0])
-            fra.append(cols[1])
-    import re
+        eng_words = txt.strip().split()
 
-    regex = re.compile("\\s|\\.|\\!|\\?")
-
-    eng_words = []
-    for sentence in eng:
-        for word in regex.split(sentence.lower()):
-            if len(word) > 0:
-                eng_words.append(word)
-
-    train(eng_words, 10_000, verbose=True)
+    print("Starting training")
+    train(eng_words, 10000, verbose=0)
+    print("Done training")
 
 
 if __name__ == "__main__":

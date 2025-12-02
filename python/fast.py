@@ -142,27 +142,25 @@ def test_train():
     print("Decoded tokens: ", decode(root))
 
 
-def test_train_large():
-    with open("../data/fra.txt", "r", encoding="utf-8") as file:
+def test_train_large(interact=False):
+    with open("../data/eng_preprocessed.txt", "r", encoding="utf-8") as file:
         txt = file.read()
-        lines = txt.strip().split("\n")
-        fra, eng = [], []
-        for line in lines:
-            cols = line.split("\t")
-            eng.append(cols[0])
-            fra.append(cols[1])
-    regex = re.compile("\\s|\\.|\\!|\\?")
+        eng_words = txt.strip().split()
 
-    eng_words = []
-    for sentence in eng:
-        for word in regex.split(sentence.lower()):
-            if len(word) > 0:
-                eng_words.append(word)
     print("Starting training")
-    train(eng_words, 10000, verbose=0)
+    vocab, merge_tree = train(eng_words, 10000, verbose=0)
     print("Done training")
+    while interact:
+        word = input('word: ').strip().lower()
+        root = encode(vocab, merge_tree, [word])
+        node = root
+        tokens = []
+        while node is not None:
+            tokens.append(node.s)
+            node = node.nxt
+        print(tokens)
 
 
 if __name__ == "__main__":
     # test_train()
-    test_train_large()
+    test_train_large(interact=True)
