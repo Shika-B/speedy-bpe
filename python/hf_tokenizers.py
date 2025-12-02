@@ -14,7 +14,5 @@ trainer = BpeTrainer(
 
 tokenizer.train(["../data/eng_preprocessed.txt"], trainer)
 
-
-# encoded = tokenizer.encode('anticonstitutionnally')
-# print(encoded.tokens)
-tokenizer.save("bpe_tokenizer.json")
+encoded = tokenizer.encode('anticonstitutionnally')
+print(encoded.tokens)
